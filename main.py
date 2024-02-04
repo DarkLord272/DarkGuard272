@@ -1,7 +1,11 @@
+# main.py
 import PySimpleGUI as sg
 import configparser
-
-CONFIG_FILE = 'darkguard_config.ini'
+import os
+from save_load import save_config, load_config
+from scanner import full_scan, quick_scan
+from autorun import set_autostartup
+from db_update import database_update
 
 def create_main_layout(theme):
     return [
@@ -30,10 +34,13 @@ def create_update_layout():
     ]
 
 def create_settings_layout(theme):
+    auto_update = load_config('AutoUpdate') == 'True'
+    auto_startup = load_config('AutoStartup') == 'True'
     return [
         [sg.Text('Настройки антивируса', font=('Helvetica', 14))],
         [sg.Combo(['Default1', 'Black', 'Reddit', 'BlueMono', 'DarkGrey14'], default_value=theme, key='-THEME-')],
-        [sg.Checkbox('Автоматически обновлять базу данных', default=True, key='-AUTO_UPDATE-', font=('Helvetica', 12))],
+        [sg.Checkbox('Автоматически обновлять базу данных', default=auto_update, key='-AUTO_UPDATE-', font=('Helvetica', 12))],
+        [sg.Checkbox('Запускать при старте Windows', default=auto_startup, key='-AUTO_STARTUP-', font=('Helvetica', 12))],
         [sg.Button('Сохранить настройки', size=(20, 2), font=('Helvetica', 12))]
     ]
 
@@ -43,27 +50,13 @@ def create_dev_layout():
         [sg.Button('Все темы', size=(20, 2), font=('Helvetica', 12), key='-THEME_PREVIEWER-')]
     ]
 
-def save_config(theme):
-    config = configparser.ConfigParser()
-    config['Settings'] = {'Theme': theme}
-    with open(CONFIG_FILE, 'w') as config_file:
-        config.write(config_file)
-
-def load_config():
-    config = configparser.ConfigParser()
-    try:
-        config.read(CONFIG_FILE)
-        if 'Settings' in config and 'Theme' in config['Settings']:
-            return config['Settings']['Theme']
-    except Exception as e:
-        print(f"Error loading config: {e}")
-    return 'Default1'  # Значение по умолчанию
-
 def main():
-    theme = load_config()
-    if theme not in ['Default1', 'Black', 'Reddit', 'BlueMono', 'DarkGrey14']:
-            theme = 'Default1'
+    theme = load_config('Theme')
+    auto_startup = load_config('AutoStartup') == 'True'
     sg.theme(theme)
+
+    if auto_startup:
+        set_autostartup(True)
 
     layout = create_main_layout(theme)
     window = sg.Window('DarkGuard272', layout, size=(600, 500))
@@ -74,15 +67,23 @@ def main():
         if event == sg.WIN_CLOSED or event == 'Выход':
             break
         elif event == 'Начать сканирование':
-            sg.popup('Сканирование в процессе...')
+            if values['-FULL_SCAN-']:
+                full_scan()
+            elif values['-QUICK_SCAN-']:
+                quick_scan()
         elif event == 'Начать обновление':
-            for i in range(100):
-                window['-PROGRESS-'].update_bar(i + 1)
-            sg.popup('Обновление завершено!')
+            database_update(window)
         elif event == 'Сохранить настройки':
             theme = values['-THEME-']
-            sg.theme(theme)
-            save_config(theme)
+            save_config('Theme', theme)
+
+            auto_update = values['-AUTO_UPDATE-']
+            save_config('AutoUpdate', str(auto_update))
+            
+            auto_startup = values['-AUTO_STARTUP-']
+            save_config('AutoStartup', str(auto_startup))
+            set_autostartup(auto_startup)
+            
             sg.popup('Настройки сохранены!')
             window.close()
             layout = create_main_layout(theme)
