@@ -18,7 +18,7 @@ def create_main_layout(theme): #отрисовка главного экрана
             [sg.Tab('Обновление', create_update_layout())],
             [sg.Tab('Настройки', create_settings_layout(theme))],
             [sg.Tab('Для разработчиков', create_dev_layout())]
-        ], font=('Helvetica', 12), size=(600, 500))]
+        ], font=('Helvetica', 12), size=(600, 405))]
     ]
 
 def create_scan_layout(): #отрисовка экрана сканирования
@@ -58,8 +58,8 @@ def create_dev_layout(): #отрисовка хрени для разрабов
         [sg.Text('Просмотр всех существующий тем', font=('Helvetica', 12))],
         [sg.Button('Все темы', size=(20, 2), font=('Helvetica', 12), key='-THEME_PREVIEWER-')],
         [sg.Text('Управление службой', font=('Helvetica', 12))],
-        [sg.Button('Установить службу', size=(20, 2), font=('Helvetica', 12), key='-INSTALL_SERVICE-')],
-        [sg.Button('Удалить службу', size=(20, 2), font=('Helvetica', 12), key='-UNINSTALL_SERVICE-')]
+        [sg.Button('Установить службу', size=(20, 2), font=('Helvetica', 12), key='-INSTALL_SERVICE-', button_color=('black', 'green'))],
+        [sg.Button('Удалить службу', size=(20, 2), font=('Helvetica', 12), key='-UNINSTALL_SERVICE-', button_color=('black', 'red'))]
     ]
 
 def main(): #главная шайтан машина, в которой все крутится и настраивается
@@ -105,6 +105,7 @@ def main(): #главная шайтан машина, в которой все 
 
         elif event == 'Сохранить настройки':
             theme = values['-THEME-']
+            sg.theme(theme)
             save_config('Theme', theme)
 
             auto_update = values['-AUTO_UPDATE-']
