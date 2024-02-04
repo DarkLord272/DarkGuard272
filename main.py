@@ -1,8 +1,11 @@
 import PySimpleGUI as sg
+import configparser
+
+CONFIG_FILE = 'darkguard_config.ini'
 
 def create_main_layout(theme):
     return [
-        [sg.Text('DarkGuard272 Антивирус', font=('Helvetica', 20), justification='center')],
+        [sg.Text('DarkGuard272', font=('Helvetica', 20), justification='center')],
         [sg.TabGroup([
             [sg.Tab('Сканирование', create_scan_layout())],
             [sg.Tab('Обновление', create_update_layout())],
@@ -40,10 +43,30 @@ def create_dev_layout():
         [sg.Button('Все темы', size=(20, 2), font=('Helvetica', 12), key='-THEME_PREVIEWER-')]
     ]
 
+def save_config(theme):
+    config = configparser.ConfigParser()
+    config['Settings'] = {'Theme': theme}
+    with open(CONFIG_FILE, 'w') as config_file:
+        config.write(config_file)
+
+def load_config():
+    config = configparser.ConfigParser()
+    try:
+        config.read(CONFIG_FILE)
+        if 'Settings' in config and 'Theme' in config['Settings']:
+            return config['Settings']['Theme']
+    except Exception as e:
+        print(f"Error loading config: {e}")
+    return 'Default1'  # Значение по умолчанию
+
 def main():
-    theme = 'Default'
+    theme = load_config()
+    if theme not in ['Default1', 'Black', 'Reddit', 'BlueMono', 'DarkGrey14']:
+            theme = 'Default1'
+    sg.theme(theme)
+
     layout = create_main_layout(theme)
-    window = sg.Window('DarkGuard272', layout, size=(600, 500))  # Увеличил размер окна
+    window = sg.Window('DarkGuard272', layout, size=(600, 500))
 
     while True:
         event, values = window.read()
@@ -59,10 +82,11 @@ def main():
         elif event == 'Сохранить настройки':
             theme = values['-THEME-']
             sg.theme(theme)
+            save_config(theme)
             sg.popup('Настройки сохранены!')
             window.close()
             layout = create_main_layout(theme)
-            window = sg.Window('DarkGuard272', layout, size=(600, 500))  # Увеличил размер окна
+            window = sg.Window('DarkGuard272', layout, size=(600, 500))
         elif event == '-THEME_PREVIEWER-':
             sg.theme_previewer()
 
