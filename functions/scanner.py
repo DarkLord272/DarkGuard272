@@ -1,15 +1,8 @@
-def full_scan():
-    """Полное сканирование файлов."""
-    print("Выполняется полное сканирование...")
+import subprocess
+import threading
 
+def start_service():
+    subprocess.run(['python', 'functions/scanner_service_win.py', 'start'], shell=True)
 
-
-    print("Сканирование завершено.")
-
-def quick_scan():
-    """Быстрое сканирование файлов."""
-    print("Выполняется быстрое сканирование...")
-
-
-
-    print("Сканирование завершено.")
+def stop_service():
+    subprocess.run(['python', 'functions/scanner_service_win.py', 'stop'], shell=True)

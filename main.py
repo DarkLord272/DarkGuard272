@@ -1,11 +1,14 @@
 # main.py
 import PySimpleGUI as sg #GUI библиотека
-import configparser #Управление конфигурационным файлом
-import os #Работа с операционной системой
+import threading
+
 from functions.save_load import save_config, load_config
-from functions.scanner import full_scan, quick_scan
 from functions.autorun import set_autostartup
 from functions.db_update import database_update
+from functions.scanner import start_service, stop_service
+from functions.install_service import install_service
+from functions.uninstall_service import uninstall_service
+
 
 def create_main_layout(theme): #отрисовка главного экрана
     return [
@@ -15,7 +18,7 @@ def create_main_layout(theme): #отрисовка главного экрана
             [sg.Tab('Обновление', create_update_layout())],
             [sg.Tab('Настройки', create_settings_layout(theme))],
             [sg.Tab('Для разработчиков', create_dev_layout())]
-        ], font=('Helvetica', 12))]
+        ], font=('Helvetica', 12), size=(600, 500))]
     ]
 
 def create_scan_layout(): #отрисовка экрана сканирования
@@ -23,7 +26,8 @@ def create_scan_layout(): #отрисовка экрана сканирован�
         [sg.Text('Выберите тип сканирования:', font=('Helvetica', 14))],
         [sg.Radio('Полное сканирование', 'SCAN_TYPE', key='-FULL_SCAN-', default=True, font=('Helvetica', 12))],
         [sg.Radio('Быстрое сканирование', 'SCAN_TYPE', key='-QUICK_SCAN-', font=('Helvetica', 12))],
-        [sg.Button('Начать сканирование', size=(20, 2), font=('Helvetica', 12))]
+        [sg.Button('Начать сканирование', size=(20, 2), font=('Helvetica', 12), key='-START_SCAN-')],
+        [sg.Button('Отменить сканирование', size=(20, 2), font=('Helvetica', 12), key='-CANCEL_SCAN-', visible=False)]
     ]
 
 def create_update_layout(): #отрисовка экрана обновления базы данных
@@ -44,12 +48,18 @@ def create_settings_layout(theme): #отрисовка экрана настро
         [sg.Checkbox('Автоматически обновлять базу данных', default=auto_update, key='-AUTO_UPDATE-', font=('Helvetica', 12))],
         [sg.Checkbox('Запускать при старте Windows', default=auto_startup, key='-AUTO_STARTUP-', font=('Helvetica', 12))],
         [sg.Button('Сохранить настройки', size=(20, 2), font=('Helvetica', 12))]
+
+
     ]
 
 def create_dev_layout(): #отрисовка хрени для разрабов
     return [
         [sg.Text('Для разработчиков', font=('Helvetica', 14))],
-        [sg.Button('Все темы', size=(20, 2), font=('Helvetica', 12), key='-THEME_PREVIEWER-')]
+        [sg.Text('Просмотр всех существующий тем', font=('Helvetica', 12))],
+        [sg.Button('Все темы', size=(20, 2), font=('Helvetica', 12), key='-THEME_PREVIEWER-')],
+        [sg.Text('Управление службой', font=('Helvetica', 12))],
+        [sg.Button('Установить службу', size=(20, 2), font=('Helvetica', 12), key='-INSTALL_SERVICE-')],
+        [sg.Button('Удалить службу', size=(20, 2), font=('Helvetica', 12), key='-UNINSTALL_SERVICE-')]
     ]
 
 def main(): #главная шайтан машина, в которой все крутится и настраивается
@@ -70,13 +80,29 @@ def main(): #главная шайтан машина, в которой все 
 
         if event == sg.WIN_CLOSED or event == 'Выход':
             break
-        elif event == 'Начать сканирование':
-            if values['-FULL_SCAN-']:
-                full_scan()
-            elif values['-QUICK_SCAN-']:
-                quick_scan()
+
+        elif event == '-START_SCAN-':
+            window['-START_SCAN-'].update(disabled=True)
+            window['-CANCEL_SCAN-'].update(visible=True)
+
+            # Запуск службы в отдельном потоке
+            scan_thread = threading.Thread(target=start_service)
+            scan_thread.start()
+
+        elif event == '-CANCEL_SCAN-':
+            stop_service()
+            window['-START_SCAN-'].update(disabled=False)
+            window['-CANCEL_SCAN-'].update(visible=False)
+
+        elif event == '-INSTALL_SERVICE-':
+            install_service()
+
+        elif event == '-UNINSTALL_SERVICE-':
+            uninstall_service()
+        
         elif event == 'Начать обновление':
             database_update(window)
+
         elif event == 'Сохранить настройки':
             theme = values['-THEME-']
             save_config('Theme', theme)
