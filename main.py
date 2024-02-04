@@ -2,10 +2,10 @@
 import PySimpleGUI as sg #GUI библиотека
 import configparser #Управление конфигурационным файлом
 import os #Работа с операционной системой
-from save_load import save_config, load_config
-from scanner import full_scan, quick_scan
-from autorun import set_autostartup
-from db_update import database_update
+from functions.save_load import save_config, load_config
+from functions.scanner import full_scan, quick_scan
+from functions.autorun import set_autostartup
+from functions.db_update import database_update
 
 def create_main_layout(theme): #отрисовка главного экрана
     return [
@@ -39,6 +39,7 @@ def create_settings_layout(theme): #отрисовка экрана настро
     auto_startup = load_config('AutoStartup') == 'True'
     return [
         [sg.Text('Настройки антивируса', font=('Helvetica', 14))],
+        [sg.Text('Тема', font=('Helvetica', 12))],
         [sg.Combo(['Default1', 'Black', 'Reddit', 'BlueMono', 'DarkGrey14'], default_value=theme, key='-THEME-')],
         [sg.Checkbox('Автоматически обновлять базу данных', default=auto_update, key='-AUTO_UPDATE-', font=('Helvetica', 12))],
         [sg.Checkbox('Запускать при старте Windows', default=auto_startup, key='-AUTO_STARTUP-', font=('Helvetica', 12))],

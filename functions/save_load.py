@@ -1,5 +1,5 @@
 import configparser
-CONFIG_FILE = 'darkguard_config.ini'
+CONFIG_FILE = './darkguard_config.ini'
 
 def save_config(key, value):
     config = configparser.ConfigParser()
