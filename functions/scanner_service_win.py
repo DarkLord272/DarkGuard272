@@ -1,25 +1,24 @@
-# scanner_service_win.py
-import os
+import win32serviceutil
+import win32service
+import win32event
 import servicemanager
 import socket
 import sys
-import win32event
-import win32service
-import win32serviceutil
-import win32timezone
 
 class ScannerService(win32serviceutil.ServiceFramework):
-    _svc_name_ = 'DarkGuardScanner'
-    _svc_display_name_ = 'DarkGuard Scanner'
+    _svc_name_ = 'DarkGuard272'
+    _svc_display_name_ = 'DarkGuard272 Scanner'
 
     def __init__(self, args):
         win32serviceutil.ServiceFramework.__init__(self, args)
         self.hWaitStop = win32event.CreateEvent(None, 0, 0, None)
-        socket.setdefaulttimeout(60)
+        socket.setdefaulttimeout(5)
+        self.is_alive = True
 
     def SvcStop(self):
         self.ReportServiceStatus(win32service.SERVICE_STOP_PENDING)
         win32event.SetEvent(self.hWaitStop)
+        self.is_alive = False
 
     def SvcDoRun(self):
         servicemanager.LogMsg(servicemanager.EVENTLOG_INFORMATION_TYPE,
@@ -28,11 +27,8 @@ class ScannerService(win32serviceutil.ServiceFramework):
         self.main()
 
     def main(self):
-        # Добавьте здесь нужные действия или цикл
-        i=0
-        while i<10:
-            win32event.WaitForSingleObject(self.hWaitStop, 1000)  # Пауза на 1 секунду
-            i=i+1
+        while self.is_alive:
+            print('Hello')
 
 if __name__ == '__main__':
     if len(sys.argv) == 1:

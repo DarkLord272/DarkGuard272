@@ -1,5 +1,4 @@
 import subprocess
-import threading
 
 def start_service():
     subprocess.run(['python', 'functions/scanner_service_win.py', 'start'], shell=True)
