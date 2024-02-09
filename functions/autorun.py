@@ -25,7 +25,3 @@ def set_autostartup(enable):
             reg.CloseKey(key_handle)
         except Exception as e:
             print(f"Error removing autostartup: {e}")
-
-if __name__ == "__main__":
-    #при запуске файла автозапуска, устанавливаем приложение в автозапуск
-    set_autostartup(True)
