@@ -74,6 +74,7 @@ def main(): #главная шайтан машина, в которой все 
         if event in actions:
             actions[event](window, values)  # Вызываем соответствующую функцию из словаря
 
+
     window.close()
 
 if __name__ == "__main__":

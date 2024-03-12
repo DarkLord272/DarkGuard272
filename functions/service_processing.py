@@ -1,26 +1,16 @@
-import sys
 import subprocess
+import win32serviceutil
+import win32service
 
-# install_service
-def install_service():
-    try:
-        subprocess.run(['python', 'functions/scanner_service_win.py', 'install'], shell=True, check=True)
-        print("Служба успешно установлена.")
-    except subprocess.CalledProcessError:
-        print("Ошибка при установке службы.")
-        sys.exit(1)
 
-# uninstall_service
-def uninstall_service():
-    try:
-        subprocess.run(['python', 'functions/scanner_service_win.py', 'remove'], shell=True, check=True)
-        print("Служба успешно удалена.")
-    except subprocess.CalledProcessError:
-        print("Ошибка при удалении службы.")
-        sys.exit(1)
+def install_service(window, values):
+    subprocess.run(['python', 'functions/scanner_service_win.py', 'install'], shell=True)
+
+def uninstall_service(window, values):
+    subprocess.run(['python', 'functions/scanner_service_win.py', 'remove'], shell=True)
 
 def start_service():
-    subprocess.run(['python', 'functions/scanner_service_win.py', 'start'], shell=True)
+    subprocess.run(["sc", "start", "DarkGuard272"], shell=True)
 
 def stop_service():
     subprocess.run(['python', 'functions/scanner_service_win.py', 'stop'], shell=True)
